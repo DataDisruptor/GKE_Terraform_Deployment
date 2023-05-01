@@ -5,6 +5,27 @@
 #     - Artifact Registry
 #     - Cloud Storage ( & create a bucket with name as in `var.bucket_name`)
 
+# Image Names & Tags
+
+# Define the Docker image name and tag
+variable "image_name" {
+  default = "frontend-container"
+}
+
+variable "image_tag" {
+  default = "v1"
+}
+
+variable "auth_image_name" {
+  default = "auth-container"
+}
+
+variable "auth_image_tag" {
+  default = "v1"
+}
+
+# Cloud Config
+
 variable "bucket_name" {
   default = "staging-env-1000"
 }
@@ -18,17 +39,8 @@ variable "git_repo_url" {
   default = "https://github.com/ceevee-ai/app.git"
 }
 
-# Define the Docker image name and tag
-variable "image_name" {
-  default = "frontend-container"
-}
-
 variable "docker_repo_name" {
   default = "my-repo"
-}
-
-variable "image_tag" {
-  default = "v1"
 }
 
 # Define the GCP project ID and zone

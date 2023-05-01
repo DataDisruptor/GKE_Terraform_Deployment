@@ -3,25 +3,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: core-deployment-service
+  name: auth-deployment-service
   namespace: default
   labels:
-    app: frontend-container
+    app: auth-container
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: frontend-container
+      app: auth-container
   template:
     metadata:
       labels:
-        app: frontend-container
+        app: auth-container
     spec:
       containers:
-        - name: frontend-container-container
-          image: me-west1-docker.pkg.dev/ceevee-ai-v1/my-repo/frontend-container:v1 #docker.io/ao5000cookiesh/ao-art:v1 #me-west1-docker.pkg.dev/superb-system-382911/my-repo/ao-art:v1
+        - name: auth-container-container
+          image: me-west1-docker.pkg.dev/ceevee-ai-v1/my-repo/auth-container:v1 #docker.io/ao5000cookiesh/ao-art:v1 #me-west1-docker.pkg.dev/superb-system-382911/my-repo/ao-art:v1
           ports:
-            - containerPort: 3000
+            - containerPort: 8080
       tolerations:
         - key: instance_type
           value: spot
@@ -43,5 +43,5 @@ spec:
                   - key: app
                     operator: In
                     values:
-                      - ao-art
+                      - auth-container
               topologyKey: kubernetes.io/hostname

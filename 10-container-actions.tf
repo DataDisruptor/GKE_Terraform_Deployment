@@ -1,20 +1,4 @@
-# Clone the Git repository
-resource "null_resource" "git_clone" {
-  provisioner "local-exec" {
-    command = "git clone ${var.git_repo_url}"
-  }
-}
-
-# Build the Docker image
-resource "null_resource" "docker_image_build" {
-
-  provisioner "local-exec" {
-    command = "cd app/client && git switch deployment && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.image_name}:${var.image_tag} ."
-  }
-  depends_on = [null_resource.git_clone]
-}
-
-# Docker Provisions and Resources - INIT
+# Docker Provisions and Resources - INIT - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 resource "google_artifact_registry_repository" "my-repo" {
   location      = var.location
@@ -56,6 +40,28 @@ resource "null_resource" "gcloud_docker_auth" {
   }
 }
 
+# Clone the Git repository
+resource "null_resource" "git_clone" {
+  provisioner "local-exec" {
+    command = "git clone ${var.git_repo_url} && cd app && git switch deployment"
+  }
+}
+
+#######################################################################################################################################################
+# Build && Push Container Images 
+
+# Frontend - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# Build Frontend Docker image
+resource "null_resource" "docker_image_build" {
+
+  provisioner "local-exec" {
+    command = "cd app/client && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.image_name}:${var.image_tag} ."
+  }
+  depends_on = [null_resource.git_clone]
+}
+
+# Push Image to Artifact Registry
 resource "null_resource" "docker_push" {
   depends_on = [
     null_resource.gcloud_docker_auth,
@@ -65,5 +71,29 @@ resource "null_resource" "docker_push" {
   ]
   provisioner "local-exec" {
     command = "docker push ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.image_name}:${var.image_tag}"
+  }
+}
+
+# Auth - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# Build Auth Docker image
+resource "null_resource" "auth_docker_image_build" {
+
+  provisioner "local-exec" {
+    command = "cd app/services/auth && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.auth_image_name}:${var.auth_image_tag} ."
+  }
+  depends_on = [null_resource.git_clone]
+}
+
+# Push Image to Artifact Registry
+resource "null_resource" "auth_docker_push" {
+  depends_on = [
+    null_resource.gcloud_docker_auth,
+    null_resource.auth_docker_image_build,
+    google_compute_network.main_vpc,
+    google_artifact_registry_repository.my-repo
+  ]
+  provisioner "local-exec" {
+    command = "docker push ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.auth_image_name}:${var.auth_image_tag}"
   }
 }

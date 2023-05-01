@@ -20,6 +20,10 @@
 #   See ingress classes:    `$ kubectl get ingressclass`
 #   Describe status:      `$ kubectl describe {service/pod/node} ${service/pod/node}_NAME`
 
+
+# Get Cluster Credentials && Deploy service account - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+# Credentials Verification
 resource "null_resource" "cluster_credentials" {
   provisioner "local-exec" {
     command = "gcloud container clusters get-credentials ${var.main_cluster_name}"
@@ -27,30 +31,70 @@ resource "null_resource" "cluster_credentials" {
   depends_on = [
     google_container_cluster.primary,
     google_container_node_pool.general,
-    google_container_node_pool.spot
+    google_container_node_pool.spot,
+    # google_container_node_pool.auth_np
   ]
 }
 
-resource "null_resource" "kube_deploy" {
+# Service account Deployment
+resource "null_resource" "kube_service_account_deploy" {
   provisioner "local-exec" {
-    command = "kubectl apply -f k8s/srv"
+    command = "kubectl apply -f k8s/0-deployment-gcloud-service-account.yaml"
   }
 
   depends_on = [
     null_resource.cluster_credentials,
+  ]
+}
+
+# Frontend deployment - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+resource "null_resource" "kube_deploy" {
+  provisioner "local-exec" {
+    command = "kubectl apply -f k8s/services/frontend"
+  }
+
+  depends_on = [
+    null_resource.cluster_credentials,
+    null_resource.kube_service_account_deploy,
     null_resource.docker_push
   ]
 }
 
 resource "null_resource" "kube_ingress" {
   provisioner "local-exec" {
-    command = "helm install my-ingress-class ingress-nginx/ingress-nginx --namespace my-ingress-namespace-name --version 4.6.0 --values k8s/ctrl/4-nginx-ingress-controller.yaml --create-namespace"
+    command = "helm repo update && helm install frontend-ingress-class ingress-nginx/ingress-nginx --namespace frontend-ingress-namespace --version 4.6.0 --values k8s/services/ingress-controllers/3-frontend-ingress-controller.yaml --create-namespace"
   }
-
   depends_on = [
     null_resource.cluster_credentials,
     null_resource.docker_push,
     null_resource.kube_deploy
+  ]
+}
+
+# Auth service Deployment - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+resource "null_resource" "auth_kube_deploy" {
+  provisioner "local-exec" {
+    command = "kubectl apply -f k8s/services/auth"
+  }
+
+  depends_on = [
+    null_resource.cluster_credentials,
+    null_resource.kube_service_account_deploy,
+    null_resource.auth_docker_push
+  ]
+}
+
+resource "null_resource" "auth_kube_ingress" {
+  provisioner "local-exec" {
+    command = "helm repo update && helm install auth-ingress-class ingress-nginx/ingress-nginx --namespace auth-ingress-namespace --version 4.6.0 --values k8s/services/ingress-controllers/3-auth-ingress-controller.yaml --create-namespace"
+  }
+
+  depends_on = [
+    null_resource.cluster_credentials,
+    null_resource.auth_docker_push,
+    null_resource.auth_kube_deploy
   ]
 }
 

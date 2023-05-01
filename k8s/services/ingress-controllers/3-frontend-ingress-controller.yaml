@@ -12,7 +12,7 @@ controller:
     use-forwarded-headers: "true"
     proxy-body-size: "0"
   ingressClassResource:
-    name: external-nginx
+    name: frontend-external-nginx
     enabled: true
     default: false
   affinity:
@@ -68,6 +68,8 @@ controller:
 #       cloud.google.com/load-balancer-type: External
 #   metrics:
 #     enabled: false
+
+# Other Kubectl version (which actually works):
 
 # apiVersion: v1
 # kind: ConfigMap
