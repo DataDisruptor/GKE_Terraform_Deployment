@@ -7,15 +7,17 @@
 
 # Image Names & Tags
 
-# Define the Docker image name and tag
-variable "image_name" {
+####################################################-> Container Names & Tags <-##############################################################
+# Frontend --------------------------------- #
+variable "frontend_image_name" {
   default = "frontend-container"
 }
 
-variable "image_tag" {
+variable "frontend_image_tag" {
   default = "v1"
 }
 
+# Auth --------------------------------- #
 variable "auth_image_name" {
   default = "auth-container"
 }
@@ -24,7 +26,34 @@ variable "auth_image_tag" {
   default = "v1"
 }
 
-# Cloud Config
+# Chat --------------------------------- #
+variable "chat_image_name" {
+  default = "chat-container"
+}
+
+variable "chat_image_tag" {
+  default = "v1"
+}
+
+# Resume --------------------------------- #
+variable "resume_image_name" {
+  default = "resume-container"
+}
+
+variable "resume_image_tag" {
+  default = "v1"
+}
+
+# Gateway --------------------------------- #
+variable "gateway_image_name" {
+  default = "gateway-container"
+}
+
+variable "gateway_image_tag" {
+  default = "v1"
+}
+
+####################################################-> Cloud Config <-##############################################################
 
 variable "bucket_name" {
   default = "staging-env-1000"

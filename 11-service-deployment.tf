@@ -49,7 +49,7 @@ resource "null_resource" "kube_service_account_deploy" {
 
 # Frontend deployment - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-resource "null_resource" "kube_deploy" {
+resource "null_resource" "frontend_kube_deploy" {
   provisioner "local-exec" {
     command = "kubectl apply -f k8s/services/frontend"
   }
@@ -57,18 +57,18 @@ resource "null_resource" "kube_deploy" {
   depends_on = [
     null_resource.cluster_credentials,
     null_resource.kube_service_account_deploy,
-    null_resource.docker_push
+    null_resource.frontend_docker_push
   ]
 }
 
-resource "null_resource" "kube_ingress" {
+resource "null_resource" "frontend_kube_ingress" {
   provisioner "local-exec" {
-    command = "helm repo update && helm install frontend-ingress-class ingress-nginx/ingress-nginx --namespace frontend-ingress-namespace --version 4.6.0 --values k8s/services/ingress-controllers/3-frontend-ingress-controller.yaml --create-namespace"
+    command = "helm repo update && helm install frontend-ingress-class ingress-nginx/ingress-nginx --namespace frontend-ingress-namespace --version 4.6.0 --values k8s/services/ingress-controllers/ING-frontend-ingress-controller.yaml --create-namespace"
   }
   depends_on = [
     null_resource.cluster_credentials,
-    null_resource.docker_push,
-    null_resource.kube_deploy
+    null_resource.frontend_docker_push,
+    null_resource.frontend_kube_deploy
   ]
 }
 
@@ -88,7 +88,7 @@ resource "null_resource" "auth_kube_deploy" {
 
 resource "null_resource" "auth_kube_ingress" {
   provisioner "local-exec" {
-    command = "helm repo update && helm install auth-ingress-class ingress-nginx/ingress-nginx --namespace auth-ingress-namespace --version 4.6.0 --values k8s/services/ingress-controllers/3-auth-ingress-controller.yaml --create-namespace"
+    command = "helm repo update && helm install auth-ingress-class ingress-nginx/ingress-nginx --namespace auth-ingress-namespace --version 4.6.0 --values k8s/services/ingress-controllers/ING-auth-ingress-controller.yaml --create-namespace"
   }
 
   depends_on = [
@@ -98,9 +98,87 @@ resource "null_resource" "auth_kube_ingress" {
   ]
 }
 
+# Chat service Deployment - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+resource "null_resource" "chat_kube_deploy" {
+  provisioner "local-exec" {
+    command = "kubectl apply -f k8s/services/chat"
+  }
+
+  depends_on = [
+    null_resource.cluster_credentials,
+    null_resource.kube_service_account_deploy,
+    null_resource.chat_docker_push
+  ]
+}
+
+resource "null_resource" "chat_kube_ingress" {
+  provisioner "local-exec" {
+    command = "helm repo update && helm install chat-ingress-class ingress-nginx/ingress-nginx --namespace chat-ingress-namespace --version 4.6.0 --values k8s/services/ingress-controllers/ING-chat-ingress-controller.yaml --create-namespace"
+  }
+
+  depends_on = [
+    null_resource.cluster_credentials,
+    null_resource.chat_docker_push,
+    null_resource.chat_kube_deploy
+  ]
+}
+
+# Resume service Deployment - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+resource "null_resource" "resume_kube_deploy" {
+  provisioner "local-exec" {
+    command = "kubectl apply -f k8s/services/resume"
+  }
+
+  depends_on = [
+    null_resource.cluster_credentials,
+    null_resource.kube_service_account_deploy,
+    null_resource.resume_docker_push
+  ]
+}
+
+resource "null_resource" "resume_kube_ingress" {
+  provisioner "local-exec" {
+    command = "helm repo update && helm install resume-ingress-class ingress-nginx/ingress-nginx --namespace resume-ingress-namespace --version 4.6.0 --values k8s/services/ingress-controllers/ING-resume-ingress-controller.yaml --create-namespace"
+  }
+
+  depends_on = [
+    null_resource.cluster_credentials,
+    null_resource.resume_docker_push,
+    null_resource.resume_kube_deploy
+  ]
+}
+
+# Gateway service Deployment - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+resource "null_resource" "gateway_kube_deploy" {
+  provisioner "local-exec" {
+    command = "kubectl apply -f k8s/services/gateway"
+  }
+
+  depends_on = [
+    null_resource.cluster_credentials,
+    null_resource.kube_service_account_deploy,
+    null_resource.gateway_docker_push
+  ]
+}
+
+resource "null_resource" "gateway_kube_ingress" {
+  provisioner "local-exec" {
+    command = "helm repo update && helm install gateway-ingress-class ingress-nginx/ingress-nginx --namespace gateway-ingress-namespace --version 4.6.0 --values k8s/services/ingress-controllers/ING-gateway-ingress-controller.yaml --create-namespace"
+  }
+
+  depends_on = [
+    null_resource.cluster_credentials,
+    null_resource.gateway_docker_push,
+    null_resource.gateway_kube_deploy
+  ]
+}
+
 # POST `$ terraform destroy`:
 
-# Only need to delete ingressControllerClass:   `$ helm delete my-ingress-class --namespace my-ingress-namespace-name` OR 
+# Only need to delete ingressControllerClass:   `$ helm delete XYZ-ingress-class --namespace XYZ-ingress-namespace` OR 
 
 # It is possible to delete a namespace created by Helm. First, you need to delete any resources that are associated with the namespace. 
 # To do this, you can use the following command:

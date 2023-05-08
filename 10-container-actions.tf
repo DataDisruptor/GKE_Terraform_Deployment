@@ -29,7 +29,7 @@ resource "google_artifact_registry_repository_iam_binding" "binding" {
 
 resource "null_resource" "gcloud_docker_auth" {
   depends_on = [
-    null_resource.docker_image_build,
+    # null_resource.docker_image_build,
     google_compute_network.main_vpc,
     google_artifact_registry_repository.my-repo,
     google_artifact_registry_repository_iam_binding.binding
@@ -53,24 +53,24 @@ resource "null_resource" "git_clone" {
 # Frontend - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # Build Frontend Docker image
-resource "null_resource" "docker_image_build" {
+resource "null_resource" "frontend_docker_image_build" {
 
   provisioner "local-exec" {
-    command = "cd app/client && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.image_name}:${var.image_tag} ."
+    command = "cd app/client && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.frontend_image_name}:${var.frontend_image_tag} ."
   }
   depends_on = [null_resource.git_clone]
 }
 
 # Push Image to Artifact Registry
-resource "null_resource" "docker_push" {
+resource "null_resource" "frontend_docker_push" {
   depends_on = [
     null_resource.gcloud_docker_auth,
-    null_resource.docker_image_build,
+    null_resource.frontend_docker_image_build,
     google_compute_network.main_vpc,
     google_artifact_registry_repository.my-repo
   ]
   provisioner "local-exec" {
-    command = "docker push ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.image_name}:${var.image_tag}"
+    command = "docker push ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.frontend_image_name}:${var.frontend_image_tag}"
   }
 }
 
@@ -95,5 +95,77 @@ resource "null_resource" "auth_docker_push" {
   ]
   provisioner "local-exec" {
     command = "docker push ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.auth_image_name}:${var.auth_image_tag}"
+  }
+}
+
+# Chat - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# Build Chat Docker image
+resource "null_resource" "chat_docker_image_build" {
+
+  provisioner "local-exec" {
+    command = "cd app/services/chat && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.chat_image_name}:${var.chat_image_tag} ."
+  }
+  depends_on = [null_resource.git_clone]
+}
+
+# Push Image to Artifact Registry
+resource "null_resource" "chat_docker_push" {
+  depends_on = [
+    null_resource.gcloud_docker_auth,
+    null_resource.chat_docker_image_build,
+    google_compute_network.main_vpc,
+    google_artifact_registry_repository.my-repo
+  ]
+  provisioner "local-exec" {
+    command = "docker push ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.chat_image_name}:${var.chat_image_tag}"
+  }
+}
+
+#Resume - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# Build Resume Docker image
+resource "null_resource" "resume_docker_image_build" {
+
+  provisioner "local-exec" {
+    command = "cd app/services/resume && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.resume_image_name}:${var.resume_image_tag} ."
+  }
+  depends_on = [null_resource.git_clone]
+}
+
+# Push Image to Artifact Registry
+resource "null_resource" "resume_docker_push" {
+  depends_on = [
+    null_resource.gcloud_docker_auth,
+    null_resource.resume_docker_image_build,
+    google_compute_network.main_vpc,
+    google_artifact_registry_repository.my-repo
+  ]
+  provisioner "local-exec" {
+    command = "docker push ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.resume_image_name}:${var.resume_image_tag}"
+  }
+}
+
+#Gateway - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# Build Gateway Docker image
+resource "null_resource" "gateway_docker_image_build" {
+
+  provisioner "local-exec" {
+    command = "cd app/services/gateway && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.gateway_image_name}:${var.gateway_image_tag} ."
+  }
+  depends_on = [null_resource.git_clone]
+}
+
+# Push Image to Artifact Registry
+resource "null_resource" "gateway_docker_push" {
+  depends_on = [
+    null_resource.gcloud_docker_auth,
+    null_resource.gateway_docker_image_build,
+    google_compute_network.main_vpc,
+    google_artifact_registry_repository.my-repo
+  ]
+  provisioner "local-exec" {
+    command = "docker push ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.gateway_image_name}:${var.gateway_image_tag}"
   }
 }

@@ -1,0 +1,47 @@
+# Deploy + AUTOSCALING
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resume-deployment-service
+  namespace: default
+  labels:
+    app: resume-container
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: resume-container
+  template:
+    metadata:
+      labels:
+        app: resume-container
+    spec:
+      containers:
+        - name: resume-container-container
+          image: me-west1-docker.pkg.dev/ceevee-ai-v1/my-repo/resume-container:v1 #docker.io/ao5000cookiesh/ao-art:v1 #me-west1-docker.pkg.dev/superb-system-382911/my-repo/ao-art:v1
+          ports:
+            - containerPort: 8080
+      tolerations:
+        - key: instance_type
+          value: spot
+          effect: NoSchedule
+          operator: Equal
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: team
+                    operator: In
+                    values:
+                      - me-team
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - resume-container
+              topologyKey: kubernetes.io/hostname
