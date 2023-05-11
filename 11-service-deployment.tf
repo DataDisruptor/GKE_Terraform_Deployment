@@ -114,7 +114,7 @@ resource "null_resource" "chat_kube_deploy" {
 
 resource "null_resource" "chat_kube_ingress" {
   provisioner "local-exec" {
-    command = "helm repo update && helm install chat-ingress-class ingress-nginx/ingress-nginx --namespace chat-ingress-namespace --version 4.6.0 --values k8s/services/ingress-controllers/ING-chat-ingress-controller.yaml --create-namespace"
+    command = "helm repo update && helm install chat-ingress-class ingress-nginx/ingress-nginx --namespace chat-ingress-namespace --version ${var.helm_ingress_version} --values k8s/services/ingress-controllers/ING-chat-ingress-controller.yaml --create-namespace"
   }
 
   depends_on = [
@@ -140,7 +140,7 @@ resource "null_resource" "resume_kube_deploy" {
 
 resource "null_resource" "resume_kube_ingress" {
   provisioner "local-exec" {
-    command = "helm repo update && helm install resume-ingress-class ingress-nginx/ingress-nginx --namespace resume-ingress-namespace --version 4.6.0 --values k8s/services/ingress-controllers/ING-resume-ingress-controller.yaml --create-namespace"
+    command = "helm repo update && helm install resume-ingress-class ingress-nginx/ingress-nginx --namespace resume-ingress-namespace --version ${var.helm_ingress_version} --values k8s/services/ingress-controllers/ING-resume-ingress-controller.yaml --create-namespace"
   }
 
   depends_on = [
@@ -166,7 +166,7 @@ resource "null_resource" "gateway_kube_deploy" {
 
 resource "null_resource" "gateway_kube_ingress" {
   provisioner "local-exec" {
-    command = "helm repo update && helm install gateway-ingress-class ingress-nginx/ingress-nginx --namespace gateway-ingress-namespace --version 4.6.0 --values k8s/services/ingress-controllers/ING-gateway-ingress-controller.yaml --create-namespace"
+    command = "helm repo update && helm install gateway-ingress-class ingress-nginx/ingress-nginx --namespace gateway-ingress-namespace --version ${var.helm_ingress_version} --values k8s/services/ingress-controllers/ING-gateway-ingress-controller.yaml --create-namespace"
   }
 
   depends_on = [

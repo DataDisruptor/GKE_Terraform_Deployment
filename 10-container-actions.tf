@@ -43,7 +43,7 @@ resource "null_resource" "gcloud_docker_auth" {
 # Clone the Git repository
 resource "null_resource" "git_clone" {
   provisioner "local-exec" {
-    command = "git clone ${var.git_repo_url} && cd app && git switch deployment"
+    command = "git clone ${var.git_repo_url} && cd ${var.git_repo_main_dir} && git switch ${var.git_branch}"
   }
 }
 
@@ -56,7 +56,7 @@ resource "null_resource" "git_clone" {
 resource "null_resource" "frontend_docker_image_build" {
 
   provisioner "local-exec" {
-    command = "cd app/client && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.frontend_image_name}:${var.frontend_image_tag} ."
+    command = "cd ${var.git_repo_main_dir}${var.git_repo_frontend_dir} && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.frontend_image_name}:${var.frontend_image_tag} ."
   }
   depends_on = [null_resource.git_clone]
 }
@@ -80,7 +80,7 @@ resource "null_resource" "frontend_docker_push" {
 resource "null_resource" "auth_docker_image_build" {
 
   provisioner "local-exec" {
-    command = "cd app/services/auth && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.auth_image_name}:${var.auth_image_tag} ."
+    command = "cd ${var.git_repo_main_dir}${var.git_repo_auth_dir} && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.auth_image_name}:${var.auth_image_tag} ."
   }
   depends_on = [null_resource.git_clone]
 }
@@ -104,7 +104,7 @@ resource "null_resource" "auth_docker_push" {
 resource "null_resource" "chat_docker_image_build" {
 
   provisioner "local-exec" {
-    command = "cd app/services/chat && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.chat_image_name}:${var.chat_image_tag} ."
+    command = "cd ${var.git_repo_main_dir}${var.git_repo_chat_dir} && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.chat_image_name}:${var.chat_image_tag} ."
   }
   depends_on = [null_resource.git_clone]
 }
@@ -128,7 +128,7 @@ resource "null_resource" "chat_docker_push" {
 resource "null_resource" "resume_docker_image_build" {
 
   provisioner "local-exec" {
-    command = "cd app/services/resume && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.resume_image_name}:${var.resume_image_tag} ."
+    command = "cd ${var.git_repo_main_dir}${var.git_repo_resume_dir} && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.resume_image_name}:${var.resume_image_tag} ."
   }
   depends_on = [null_resource.git_clone]
 }
@@ -152,7 +152,7 @@ resource "null_resource" "resume_docker_push" {
 resource "null_resource" "gateway_docker_image_build" {
 
   provisioner "local-exec" {
-    command = "cd app/services/gateway && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.gateway_image_name}:${var.gateway_image_tag} ."
+    command = "cd ${var.git_repo_main_dir}${var.git_repo_gateway_dir} && docker build -t ${var.location}-docker.pkg.dev/${var.project_id}/${var.docker_repo_name}/${var.gateway_image_name}:${var.gateway_image_tag} ."
   }
   depends_on = [null_resource.git_clone]
 }
